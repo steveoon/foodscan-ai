@@ -5,7 +5,6 @@ import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import * as Colors from "@bacons/apple-colors";
-import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 import { useThemeStore } from "@/hooks/useThemeStore";
 
 export default function HomeScreen() {
@@ -41,52 +40,6 @@ export default function HomeScreen() {
 
       <ThemedView
         style={[
-          styles.card,
-          { backgroundColor: isDark ? "#252525" : "#F5F5F5" },
-        ]}
-      >
-        <ThemedText type="subtitle" style={{ color: primaryColor }}>
-          当前主题模式
-        </ThemedText>
-        <ThemedView style={styles.themeIndicator}>
-          <ThemedView
-            style={[
-              styles.themeCircle,
-              { backgroundColor: isDark ? "#FFFFFF" : "#000000" },
-            ]}
-          />
-          <ThemedText style={{ color: secondaryColor }}>
-            {isDark ? "深色模式" : "浅色模式"}
-          </ThemedText>
-        </ThemedView>
-        <ThemedText>
-          系统当前使用的是
-          <ThemedText type="defaultSemiBold" style={{ color: primaryColor }}>
-            {isDark ? "深色" : "浅色"}
-          </ThemedText>
-          主题。 FoodScan AI 会自动适配系统主题设置。
-        </ThemedText>
-
-        <ThemedView style={styles.themeToggleContainer}>
-          <ThemeToggleButton size={28} showLabel={true} />
-          <ThemedText style={styles.themeToggleHint}>
-            点击上方按钮可以在浅色/深色/系统三种模式间切换
-          </ThemedText>
-          <ThemedText
-            style={{ color: secondaryColor, fontSize: 12, marginTop: 4 }}
-          >
-            当前设置:{" "}
-            {theme === "system"
-              ? "跟随系统"
-              : theme === "light"
-              ? "浅色模式"
-              : "深色模式"}
-          </ThemedText>
-        </ThemedView>
-      </ThemedView>
-
-      <ThemedView
-        style={[
           styles.stepContainer,
           {
             borderLeftColor: primaryColor,
@@ -97,11 +50,11 @@ export default function HomeScreen() {
       >
         <ThemedText type="subtitle">扫描食物</ThemedText>
         <ThemedText>
-          点击
+          点击底部导航栏中的
           <ThemedText type="defaultSemiBold" style={{ color: accentColor }}>
-            扫描
+            相机按钮
           </ThemedText>
-          标签页， 拍摄或上传食物图片，获取详细的营养分析。
+          ，拍摄或上传食物图片，获取详细的营养分析。
         </ThemedText>
       </ThemedView>
 
@@ -131,7 +84,7 @@ export default function HomeScreen() {
           提示
         </ThemedText>
         <ThemedText>
-          您可以在系统设置中切换深色/浅色模式，应用界面会自动适配。
+          您可以在"我的"页面中进行主题设置，切换深色/浅色模式。
         </ThemedText>
       </ThemedView>
     </ParallaxScrollView>
@@ -161,26 +114,5 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     gap: 8,
-  },
-  themeIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginVertical: 8,
-  },
-  themeCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-  },
-  themeToggleContainer: {
-    marginTop: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  themeToggleHint: {
-    fontSize: 12,
-    marginTop: 8,
-    textAlign: "center",
   },
 });

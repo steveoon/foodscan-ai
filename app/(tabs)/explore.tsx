@@ -1,109 +1,397 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import { StyleSheet, TouchableOpacity, Modal } from "react-native";
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { useThemeStore } from "@/hooks/useThemeStore";
+import { useColorScheme as useRNColorScheme } from "react-native";
+import { ThemeToggleButton } from "@/components/ThemeToggleButton";
+import { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import * as AppleColors from "@bacons/apple-colors";
 
-export default function TabTwoScreen() {
+export default function ProfileScreen() {
+  const colorScheme = useColorScheme();
+  const systemTheme = useRNColorScheme();
+  const currentTheme = useThemeStore((state) =>
+    state.getCurrentTheme(systemTheme)
+  );
+  const isDark = currentTheme === "dark";
+  const theme = useThemeStore((state) => state.theme);
+  const setTheme = useThemeStore((state) => state.setTheme);
+
+  // 主题设置模态框状态
+  const [themeModalVisible, setThemeModalVisible] = useState(false);
+
+  // 主题显示文本
+  const getThemeText = () => {
+    switch (theme) {
+      case "light":
+        return "浅色模式";
+      case "dark":
+        return "深色模式";
+      case "system":
+        return `跟随系统 (${isDark ? "深色" : "浅色"})`;
+      default:
+        return "";
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
+    <ThemedView style={styles.container}>
+      <ThemedView style={styles.header}>
+        <ThemedText type="title">我的</ThemedText>
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
+
+      {/* 用户信息卡片 - 简单占位版本 */}
+      <ThemedView style={styles.userCard}>
+        <IconSymbol
+          name="person.fill"
+          size={50}
+          color={isDark ? Colors.dark.primary : Colors.light.primary}
+        />
+        <ThemedText style={styles.username}>用户名</ThemedText>
+      </ThemedView>
+
+      {/* 设置列表 - 简单占位版本 */}
+      <ThemedView style={styles.settingsContainer}>
+        <ThemedText style={styles.sectionTitle}>设置</ThemedText>
+
+        {/* 主题设置 */}
+        <TouchableOpacity
+          style={styles.settingItem}
+          onPress={() => setThemeModalVisible(true)}
+        >
+          <ThemedView style={styles.settingItemLeft}>
+            {theme === "light" ? (
+              <Ionicons
+                name="sunny"
+                size={24}
+                color={AppleColors.systemYellow}
+              />
+            ) : theme === "dark" ? (
+              <Ionicons
+                name="moon"
+                size={24}
+                color={AppleColors.systemIndigo}
+              />
+            ) : (
+              <Ionicons
+                name="phone-portrait"
+                size={24}
+                color={AppleColors.systemBlue}
+              />
+            )}
+            <ThemedText style={styles.settingLabel}>主题设置</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.settingItemRight}>
+            <ThemedText style={styles.settingValue}>
+              {getThemeText()}
             </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+            <IconSymbol
+              name="chevron.right"
+              size={20}
+              color={
+                isDark ? Colors.dark.textTertiary : Colors.light.textTertiary
+              }
+            />
+          </ThemedView>
+        </TouchableOpacity>
+      </ThemedView>
+
+      {/* 主题设置模态框 */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={themeModalVisible}
+        onRequestClose={() => setThemeModalVisible(false)}
+      >
+        <ThemedView style={styles.modalOverlay}>
+          <ThemedView
+            style={[
+              styles.modalContent,
+              { backgroundColor: isDark ? "#1E2022" : "#FFFFFF" },
+            ]}
+          >
+            <ThemedView style={styles.modalHeader}>
+              <ThemedText type="subtitle">主题设置</ThemedText>
+              <TouchableOpacity onPress={() => setThemeModalVisible(false)}>
+                <Ionicons
+                  name="close"
+                  size={24}
+                  color={
+                    isDark
+                      ? Colors.dark.textSecondary
+                      : Colors.light.textSecondary
+                  }
+                />
+              </TouchableOpacity>
+            </ThemedView>
+
+            <ThemedView style={styles.themeOptions}>
+              {/* 浅色模式选项 */}
+              <TouchableOpacity
+                style={[
+                  styles.themeOption,
+                  theme === "light" && {
+                    borderColor: Colors[colorScheme || "light"].primary,
+                    backgroundColor: isDark
+                      ? "rgba(54, 209, 168, 0.1)"
+                      : "rgba(54, 209, 168, 0.1)",
+                  },
+                ]}
+                onPress={() => setTheme("light")}
+              >
+                <ThemedView style={styles.themeOptionContent}>
+                  <Ionicons
+                    name="sunny"
+                    size={28}
+                    color={AppleColors.systemYellow}
+                  />
+                  <ThemedText style={styles.themeOptionText}>
+                    浅色模式
+                  </ThemedText>
+                </ThemedView>
+                {theme === "light" && (
+                  <ThemedView
+                    style={[
+                      styles.themeSelectedIndicator,
+                      {
+                        backgroundColor: Colors[colorScheme || "light"].primary,
+                      },
+                    ]}
+                  >
+                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                  </ThemedView>
+                )}
+              </TouchableOpacity>
+
+              {/* 深色模式选项 */}
+              <TouchableOpacity
+                style={[
+                  styles.themeOption,
+                  theme === "dark" && {
+                    borderColor: Colors[colorScheme || "light"].primary,
+                    backgroundColor: isDark
+                      ? "rgba(54, 209, 168, 0.1)"
+                      : "rgba(54, 209, 168, 0.1)",
+                  },
+                ]}
+                onPress={() => setTheme("dark")}
+              >
+                <ThemedView style={styles.themeOptionContent}>
+                  <Ionicons
+                    name="moon"
+                    size={28}
+                    color={AppleColors.systemIndigo}
+                  />
+                  <ThemedText style={styles.themeOptionText}>
+                    深色模式
+                  </ThemedText>
+                </ThemedView>
+                {theme === "dark" && (
+                  <ThemedView
+                    style={[
+                      styles.themeSelectedIndicator,
+                      {
+                        backgroundColor: Colors[colorScheme || "light"].primary,
+                      },
+                    ]}
+                  >
+                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                  </ThemedView>
+                )}
+              </TouchableOpacity>
+
+              {/* 跟随系统选项 */}
+              <TouchableOpacity
+                style={[
+                  styles.themeOption,
+                  theme === "system" && {
+                    borderColor: Colors[colorScheme || "light"].primary,
+                    backgroundColor: isDark
+                      ? "rgba(54, 209, 168, 0.1)"
+                      : "rgba(54, 209, 168, 0.1)",
+                  },
+                ]}
+                onPress={() => setTheme("system")}
+              >
+                <ThemedView style={styles.themeOptionContent}>
+                  <Ionicons
+                    name="phone-portrait"
+                    size={28}
+                    color={AppleColors.systemBlue}
+                  />
+                  <ThemedView style={{ flex: 1 }}>
+                    <ThemedText style={styles.themeOptionText}>
+                      跟随系统
+                    </ThemedText>
+                    <ThemedText style={styles.themeOptionDesc}>
+                      当前系统使用{isDark ? "深色" : "浅色"}模式
+                    </ThemedText>
+                  </ThemedView>
+                </ThemedView>
+                {theme === "system" && (
+                  <ThemedView
+                    style={[
+                      styles.themeSelectedIndicator,
+                      {
+                        backgroundColor: Colors[colorScheme || "light"].primary,
+                      },
+                    ]}
+                  >
+                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                  </ThemedView>
+                )}
+              </TouchableOpacity>
+            </ThemedView>
+
+            <ThemedView style={styles.themePreview}>
+              <ThemedText style={styles.themePreviewText}>预览</ThemedText>
+              <ThemeToggleButton size={32} showLabel={false} />
+            </ThemedView>
+
+            <TouchableOpacity
+              style={[
+                styles.closeButton,
+                { backgroundColor: Colors[colorScheme || "light"].primary },
+              ]}
+              onPress={() => setThemeModalVisible(false)}
+            >
+              <ThemedText style={styles.closeButtonText}>确定</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        </ThemedView>
+      </Modal>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    padding: 16,
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  header: {
+    marginTop: 60,
+    marginBottom: 20,
+  },
+  userCard: {
+    alignItems: "center",
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+  username: {
+    marginTop: 10,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  settingsContainer: {
+    marginTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  settingItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(150, 150, 150, 0.2)",
+  },
+  settingItemLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  settingItemRight: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  settingLabel: {
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  settingValue: {
+    fontSize: 14,
+    opacity: 0.6,
+    marginRight: 5,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    minHeight: "60%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  themeOptions: {
+    marginTop: 10,
+  },
+  themeOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 15,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(150, 150, 150, 0.2)",
+    marginBottom: 12,
+  },
+  themeOptionContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  themeOptionText: {
+    fontSize: 16,
+    marginLeft: 12,
+  },
+  themeOptionDesc: {
+    fontSize: 12,
+    marginLeft: 12,
+    opacity: 0.6,
+  },
+  themeSelectedIndicator: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  themePreview: {
+    marginTop: 20,
+    marginBottom: 20,
+    alignItems: "center",
+  },
+  themePreviewText: {
+    fontSize: 16,
+    marginBottom: 10,
+    opacity: 0.7,
+  },
+  closeButton: {
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  closeButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
