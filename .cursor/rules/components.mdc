@@ -1,0 +1,106 @@
+---
+description: 这个规则适用于项目中的 React 组件文件，提供了组件开发的具体指导和最佳实践。
+globs: components/**/*.tsx`,components/**/*.ts
+alwaysApply: false
+---
+# React 组件规则
+
+## 适用范围
+
+**适用于:** `components/**/*.tsx`, `components/**/*.ts`
+
+## 规则内容
+
+### 组件结构
+
+- 使用函数式组件而非类组件
+- 使用命名导出而非默认导出
+- 组件应该是纯函数，避免副作用
+- 将大型组件拆分为更小的可复用组件
+- 使用 TypeScript 接口定义组件 props
+- 为 props 提供默认值和类型注解
+
+### 示例组件结构
+
+```tsx
+import { StyleSheet } from "react-native";
+import { View, Text } from "./ThemedComponents";
+
+// 定义组件props接口
+interface MyComponentProps {
+  title: string;
+  description?: string;
+  onPress?: () => void;
+}
+
+// 组件实现
+export function MyComponent({
+  title,
+  description = "默认描述",
+  onPress,
+}: MyComponentProps) {
+  // 组件逻辑
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{title}</Text>
+      {description && <Text style={styles.description}>{description}</Text>}
+    </View>
+  );
+}
+
+// 样式定义
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  description: {
+    fontSize: 14,
+    marginTop: 8,
+  },
+});
+```
+
+### 样式指南
+
+- 使用 StyleSheet.create 创建样式
+- 避免内联样式，除非样式是动态的
+- 使用主题变量而非硬编码颜色值
+- 使用相对单位而非固定像素值
+- 考虑不同屏幕尺寸和方向
+- 使用 Flexbox 进行布局
+
+### 状态管理
+
+- 使用 useState 管理组件内部状态
+- 使用 useReducer 管理复杂状态
+- 使用 useContext 管理全局状态
+- 避免过度使用状态，优先使用 props
+- 考虑状态提升以共享状态
+
+### 性能优化
+
+- 使用 useMemo 缓存计算结果
+- 使用 useCallback 缓存回调函数
+- 使用 React.memo 避免不必要的重新渲染
+- 避免在渲染函数中创建新函数或对象
+- 使用 useEffect 的依赖数组正确管理副作用
+
+### 可访问性
+
+- 使用适当的语义化组件
+- 提供足够的对比度
+- 支持屏幕阅读器
+- 考虑键盘导航
+- 提供适当的触摸目标大小
+
+### 测试
+
+- 编写单元测试验证组件行为
+- 测试边缘情况和错误处理
+- 模拟 props 和用户交互
+- 验证渲染输出和副作用

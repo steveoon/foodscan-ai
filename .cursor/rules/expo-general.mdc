@@ -1,0 +1,59 @@
+---
+description: 这个规则适用于基于 Expo 框架开发的 React Native 移动应用。它提供了关于代码风格、最佳实践和项目结构的指导。
+globs: **/*
+alwaysApply: false
+---
+# Expo 移动应用通用规则
+
+## 规则内容
+
+### 代码风格
+
+- 使用 TypeScript 进行类型安全开发
+- 使用函数式组件和 React Hooks
+- 使用 ES6+语法特性
+- 遵循 React 和 React Native 的最佳实践
+- 组件名称使用 PascalCase
+- 变量和函数名称使用 camelCase
+- 常量使用 UPPER_SNAKE_CASE
+- 文件名与导出的主要组件名称保持一致
+
+### 项目结构
+
+- 使用 Expo Router 进行导航和路由管理
+- 遵循 Expo Router 的文件系统路由约定
+- 将可重用组件放在`components/`目录下
+- 将 UI 相关的通用组件放在`components/ui/`目录下
+- 将业务逻辑和数据处理放在`hooks/`目录下
+- 将全局常量和配置放在`constants/`目录下
+- 将静态资源放在`assets/`目录下
+
+### 性能优化
+
+- 避免不必要的重新渲染
+- 使用`useMemo`和`useCallback`优化性能
+- 使用`React.memo`优化组件性能
+- 避免在渲染函数中创建新函数或对象
+- 使用适当的列表渲染优化（如 FlatList）
+- 避免过度使用内联样式
+
+### 跨平台兼容性
+
+- 考虑 iOS 和 Android 平台的差异
+- 使用平台特定文件（.ios.tsx/.android.tsx）处理平台差异
+- 使用 Expo 提供的 API 而不是原生模块，以确保跨平台兼容性
+- 测试在不同设备和屏幕尺寸上的表现
+
+### 响应式设计
+
+- 使用相对单位而不是固定像素值
+- 考虑不同屏幕尺寸和方向
+- 使用 Flexbox 进行布局
+- 考虑安全区域和刘海屏等特殊情况
+
+### AI 辅助开发
+
+- 生成的代码应符合上述所有规则
+- 优先使用 Expo SDK 提供的 API 和组件
+- 遵循 React Native 的性能最佳实践
+- 考虑移动设备的资源限制和性能要求

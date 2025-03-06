@@ -1,0 +1,237 @@
+---
+description: 这个规则适用于项目中的 AI 集成部分，提供了使用 AI SDK 的最佳实践和指导，特别是在 Expo 环境中的 AI 集成。
+globs: **/*ai*.ts,**/*ai*.tsx,**/hooks/use*AI*.ts,**/api/**/*.ts,**/api/**/*+api.ts
+alwaysApply: false
+---
+# AI 集成规则
+
+## 适用范围
+
+**适用于:** `**/*ai*.ts`, `**/*ai*.tsx`, `**/hooks/use*AI*.ts`, `**/api/**/*.ts`, `**/api/**/*+api.ts`
+
+## 规则内容
+
+### AI SDK 使用
+
+- 使用`@ai-sdk/react`提供的 hooks 进行 AI 交互
+- 使用`@ai-sdk/google`和`@ai-sdk/openai`进行模型调用
+- 使用`ai`包提供的工具进行流式响应处理
+- 在 Expo 环境中使用`expo/fetch`替代全局`fetch`
+- 为移动端设置必要的 polyfill（如`TextEncoderStream`、`TextDecoderStream`和`structuredClone`）
+- 遵循 AI SDK 的最佳实践和推荐用法
+
+### API 路由设置
+
+- 使用 Expo Router 的`+api.ts`命名约定创建 API 路由（例如：`app/api/chat+api.ts`）
+- 使用`streamText`函数处理流式响应
+- 使用`toDataStreamResponse`方法返回流式响应
+- 正确配置 API 端点 URL，区分开发环境和生产环境
+- 使用环境变量存储 API 基础 URL
+
+### 模型调用
+
+- 使用适当的模型参数（如选择`gpt-4o`等模型）
+- 实现工具函数(tools)以扩展 AI 能力
+- 使用`z`库进行参数验证
+- 处理 API 错误和超时情况
+- 实现重试机制和错误恢复
+
+### 示例 API 路由
+
+```tsx
+// app/api/chat+api.ts
+import { openai } from "@ai-sdk/openai";
+import { streamText, tool } from "ai";
+import { z } from "zod";
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const result = streamText({
+    model: openai("gpt-4o"),
+    messages,
+    tools: {
+      getWeather: tool({
+        description: "获取指定位置的天气信息（摄氏度）",
+        parameters: z.object({
+          location: z.string().describe("要获取天气的位置"),
+        }),
+        execute: async ({ location }) => {
+          // 这里应该是实际的API调用，这里只是模拟
+          const temperature = Math.round(Math.random() * (32 - 10) + 10);
+          return {
+            location,
+            temperature,
+            unit: "摄氏度",
+          };
+        },
+      }),
+    },
+  });
+
+  return result.toDataStreamResponse();
+}
+```
+
+### 示例工具函数
+
+```tsx
+// utils/api.ts
+import Constants from "expo-constants";
+
+export const generateAPIUrl = (relativePath: string) => {
+  const origin = Constants.experienceUrl?.replace("exp://", "http://");
+
+  const path = relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
+
+  if (process.env.NODE_ENV === "development" && origin) {
+    return origin.concat(path);
+  }
+
+  if (!process.env.EXPO_PUBLIC_API_BASE_URL) {
+    throw new Error("EXPO_PUBLIC_API_BASE_URL环境变量未定义");
+  }
+
+  return process.env.EXPO_PUBLIC_API_BASE_URL.concat(path);
+};
+```
+
+### 示例 Polyfill 设置
+
+```tsx
+// utils/polyfills.ts
+import { Platform } from "react-native";
+import structuredClone from "@ungap/structured-clone";
+
+if (Platform.OS !== "web") {
+  const setupPolyfills = async () => {
+    const { polyfillGlobal } = await import(
+      "react-native/Libraries/Utilities/PolyfillFunctions"
+    );
+
+    const { TextEncoderStream, TextDecoderStream } = await import(
+      "@stardazed/streams-text-encoding"
+    );
+
+    if (!("structuredClone" in global)) {
+      polyfillGlobal("structuredClone", () => structuredClone);
+    }
+
+    polyfillGlobal("TextEncoderStream", () => TextEncoderStream);
+    polyfillGlobal("TextDecoderStream", () => TextDecoderStream);
+  };
+
+  setupPolyfills();
+}
+
+export {};
+```
+
+### 示例聊天组件
+
+```tsx
+// app/(tabs)/chat.tsx
+import { generateAPIUrl } from "../../utils/api";
+import { useChat } from "@ai-sdk/react";
+import { fetch as expoFetch } from "expo/fetch";
+import { View, TextInput, ScrollView, Text, SafeAreaView } from "react-native";
+
+export default function ChatScreen() {
+  const { messages, error, handleInputChange, input, handleSubmit } = useChat({
+    fetch: expoFetch as unknown as typeof globalThis.fetch,
+    api: generateAPIUrl("/api/chat"),
+    onError: (error) => console.error(error, "ERROR"),
+    maxSteps: 5, // 启用多步工具调用
+  });
+
+  if (error) return <Text>{error.message}</Text>;
+
+  return (
+    <SafeAreaView style={{ height: "100%" }}>
+      <View
+        style={{
+          height: "95%",
+          display: "flex",
+          flexDirection: "column",
+          paddingHorizontal: 8,
+        }}
+      >
+        <ScrollView style={{ flex: 1 }}>
+          {messages.map((m) => (
+            <View key={m.id} style={{ marginVertical: 8 }}>
+              <View>
+                <Text style={{ fontWeight: "700" }}>{m.role}</Text>
+                {m.toolInvocations ? (
+                  <Text>{JSON.stringify(m.toolInvocations, null, 2)}</Text>
+                ) : (
+                  <Text>{m.content}</Text>
+                )}
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+
+        <View style={{ marginTop: 8 }}>
+          <TextInput
+            style={{ backgroundColor: "white", padding: 8 }}
+            placeholder="输入消息..."
+            value={input}
+            onChange={(e) =>
+              handleInputChange({
+                ...e,
+                target: {
+                  ...e.target,
+                  value: e.nativeEvent.text,
+                },
+              } as unknown as React.ChangeEvent<HTMLInputElement>)
+            }
+            onSubmitEditing={(e) => {
+              handleSubmit(e);
+              e.preventDefault();
+            }}
+            autoFocus={true}
+          />
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+```
+
+### 用户体验
+
+- 显示加载状态和进度指示器
+- 实现流式响应以提高感知性能
+- 区分普通消息和工具调用结果的显示
+- 提供取消请求的选项
+- 显示错误消息和重试选项
+- 保存对话历史记录
+
+### 性能和资源管理
+
+- 避免不必要的 API 调用
+- 实现请求节流和防抖
+- 考虑使用缓存减少重复请求
+- 监控 API 使用量和成本
+- 实现超时处理和请求取消
+
+### 隐私和安全
+
+- 不要在客户端存储敏感 API 密钥
+- 使用环境变量存储 API 密钥（如`EXPO_PUBLIC_API_BASE_URL`）
+- 考虑使用服务器端代理进行 API 调用
+- 遵循数据隐私最佳实践
+- 告知用户数据使用情况
+
+### 跨平台兼容性
+
+- 确保在 iOS、Android 和 Web 平台上的一致体验
+- 使用适当的 polyfill 确保功能在所有平台上可用
+- 测试在不同设备和屏幕尺寸上的表现
+- 考虑网络连接状态和离线模式
+
+### 服务器配置
+
+- 在`app.json`中配置`web.output: "server"`以支持服务器输出
+- 考虑使用环境变量`EXPO_UNSTABLE_DEPLOY_SERVER=1`在 EAS 构建中自动配置服务器 URL
+- 确保服务器环境符合 WinterCG 标准

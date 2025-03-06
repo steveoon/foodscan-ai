@@ -1,0 +1,57 @@
+---
+description: 这是 FoodScan AI 项目的主规则文件，它引用了其他特定领域的规则文件。
+globs: **/*
+alwaysApply: true
+---
+# FoodScan AI 项目规则
+
+## 适用范围
+
+**适用于:** `**/*`
+
+## 引用规则
+
+@file:.cursor/rules/expo-general.mdc
+@file:.cursor/rules/components.mdc
+@file:.cursor/rules/expo-router.mdc
+@file:.cursor/rules/ai-integration.mdc
+
+## 项目特定规则
+
+### 项目概述
+
+FoodScan AI 是一个基于 Expo 开发的全平台移动应用，它使用 AI 技术帮助用户识别和分析食物。
+
+### 代码风格
+
+- 使用 TypeScript 进行类型安全开发
+- 遵循 ESLint 和 Prettier 的代码格式化规则
+- 使用函数式编程范式
+- 使用 React Hooks 进行状态管理和副作用处理
+
+### 项目结构
+
+- 使用 Expo Router 进行导航
+- 使用组件化开发方法
+- 将业务逻辑与 UI 分离
+- 使用 hooks 封装可复用逻辑
+
+### 性能优化
+
+- 优化应用启动时间
+- 减少不必要的重新渲染
+- 优化图片和资源加载
+- 实现懒加载和代码分割
+
+### 跨平台兼容性
+
+- 确保在 iOS 和 Android 上的一致体验
+- 使用平台特定代码处理平台差异
+- 测试在不同设备和屏幕尺寸上的表现
+
+### AI 集成
+
+- 使用 AI SDK 进行模型调用
+- 实现高效的图像处理和分析
+- 提供用户友好的 AI 交互界面
+- 处理离线和在线模式
