@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     // 创建流式响应
     const result = streamText({
-      model: openai("gpt-4-vision-preview"),
+      model: openai("gpt-4o"),
       messages: [
         {
           role: "system",
