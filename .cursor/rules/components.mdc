@@ -25,6 +25,7 @@ alwaysApply: false
 ```tsx
 import { StyleSheet } from "react-native";
 import { View, Text } from "./ThemedComponents";
+import { useColors } from "../hooks/useColors"; // 使用颜色钩子
 
 // 定义组件props接口
 interface MyComponentProps {
@@ -39,12 +40,15 @@ export function MyComponent({
   description = "默认描述",
   onPress,
 }: MyComponentProps) {
+  // 获取主题颜色
+  const colors = useColors();
+  
   // 组件逻辑
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      {description && <Text style={styles.description}>{description}</Text>}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+      {description && <Text style={[styles.description, { color: colors.secondary }]}>{description}</Text>}
     </View>
   );
 }
@@ -74,13 +78,253 @@ const styles = StyleSheet.create({
 - 考虑不同屏幕尺寸和方向
 - 使用 Flexbox 进行布局
 
+### 颜色系统
+
+- 使用 `@bacons/apple-colors` 包提供的 iOS 标准颜色
+- 创建颜色主题钩子，支持深色和浅色模式
+- 避免直接在组件中硬编码颜色值
+- 遵循平台设计规范的颜色使用
+
+```tsx
+// hooks/useColors.ts 示例
+import { useColorScheme } from "react-native";
+import * as AppleColors from "@bacons/apple-colors";
+
+export function useColors() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  
+  return {
+    primary: isDark ? AppleColors.blue.dark : AppleColors.blue.light,
+    secondary: isDark ? AppleColors.gray.dark : AppleColors.gray.light,
+    background: isDark ? "#000000" : "#FFFFFF",
+    text: isDark ? "#FFFFFF" : "#000000",
+    // 其他颜色...
+  };
+}
+```
+
 ### 状态管理
 
-- 使用 useState 管理组件内部状态
+#### 本地状态
+
+- 使用 useState 管理简单的组件内部状态
 - 使用 useReducer 管理复杂状态
-- 使用 useContext 管理全局状态
+- 使用 useContext 管理跨组件状态
 - 避免过度使用状态，优先使用 props
 - 考虑状态提升以共享状态
+
+#### 全局状态 (Zustand)
+
+- 使用 Zustand 管理全局应用状态
+- 创建模块化的状态存储
+- 只订阅组件所需的状态切片
+- 使用 TypeScript 类型定义状态和操作
+
+```tsx
+// stores/foodStore.ts 示例
+import { create } from "zustand";
+
+interface FoodItem {
+  id: string;
+  name: string;
+  calories: number;
+  // 其他属性...
+}
+
+interface FoodStore {
+  items: FoodItem[];
+  recentScans: FoodItem[];
+  addItem: (item: FoodItem) => void;
+  removeItem: (id: string) => void;
+  clearRecentScans: () => void;
+}
+
+export const useFoodStore = create<FoodStore>((set) => ({
+  items: [],
+  recentScans: [],
+  addItem: (item) => set((state) => ({ 
+    items: [...state.items, item],
+    recentScans: [item, ...state.recentScans].slice(0, 10)
+  })),
+  removeItem: (id) => set((state) => ({ 
+    items: state.items.filter(item => item.id !== id) 
+  })),
+  clearRecentScans: () => set({ recentScans: [] })
+}));
+
+// 在组件中使用
+function FoodList() {
+  // 只订阅需要的状态切片
+  const items = useFoodStore(state => state.items);
+  const removeItem = useFoodStore(state => state.removeItem);
+  
+  // 组件实现...
+}
+```
+
+### 表单处理
+
+- 使用 `react-hook-form` 管理表单状态和验证
+- 结合 `zod` 进行表单验证
+- 创建可复用的表单组件
+
+```tsx
+// 表单组件示例
+import { useForm, Controller } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { TextInput, Button, Text, View } from "react-native";
+
+// 定义表单验证模式
+const formSchema = z.object({
+  foodName: z.string().min(2, "食物名称至少需要2个字符"),
+  calories: z.number().min(0, "卡路里不能为负数")
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+export function FoodForm({ onSubmit }) {
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      foodName: "",
+      calories: 0
+    }
+  });
+  
+  return (
+    <View>
+      <Controller
+        control={control}
+        name="foodName"
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            value={value}
+            onChangeText={onChange}
+            placeholder="食物名称"
+          />
+        )}
+      />
+      {errors.foodName && <Text>{errors.foodName.message}</Text>}
+      
+      {/* 其他表单字段... */}
+      
+      <Button title="提交" onPress={handleSubmit(onSubmit)} />
+    </View>
+  );
+}
+```
+
+### UI组件增强
+
+#### 分段控制
+
+- 使用 `@react-native-segmented-control/segmented-control` 创建分段控制组件
+- 用于在有限选项间切换的场景
+
+```tsx
+import SegmentedControl from "@react-native-segmented-control/segmented-control";
+
+function FilterControl() {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const segments = ["全部", "早餐", "午餐", "晚餐"];
+  
+  return (
+    <SegmentedControl
+      values={segments}
+      selectedIndex={selectedIndex}
+      onChange={(event) => {
+        setSelectedIndex(event.nativeEvent.selectedSegmentIndex);
+      }}
+    />
+  );
+}
+```
+
+#### 模糊效果
+
+- 使用 `expo-blur` 创建毛玻璃效果
+- 适用于创建现代化UI元素
+
+```tsx
+import { BlurView } from "expo-blur";
+
+function GlassCard({ children }) {
+  const colorScheme = useColorScheme();
+  
+  return (
+    <BlurView
+      intensity={80}
+      tint={colorScheme === "dark" ? "dark" : "light"}
+      style={styles.container}
+    >
+      {children}
+    </BlurView>
+  );
+}
+```
+
+#### 底部弹出菜单
+
+- 使用 `vaul` 创建底部弹出菜单
+- 适用于详情展示和操作菜单
+
+```tsx
+import { Drawer } from "vaul";
+
+function FoodDetails({ food }) {
+  return (
+    <Drawer>
+      <Drawer.Trigger asChild>
+        <Button title="查看详情" />
+      </Drawer.Trigger>
+      <Drawer.Content>
+        <Drawer.Header>
+          <Text>{food.name}</Text>
+        </Drawer.Header>
+        <Drawer.Body>
+          {/* 详情内容 */}
+        </Drawer.Body>
+      </Drawer.Content>
+    </Drawer>
+  );
+}
+```
+
+### 图像处理
+
+- 使用 `expo-image-picker` 选择或拍摄图片
+- 处理图片上传和显示
+
+```tsx
+import * as ImagePicker from "expo-image-picker";
+import { Image, Button } from "react-native";
+
+function ImageUploader() {
+  const [image, setImage] = useState(null);
+  
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+  
+  return (
+    <View>
+      <Button title="选择图片" onPress={pickImage} />
+      {image && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}
+    </View>
+  );
+}
+```
 
 ### 性能优化
 
