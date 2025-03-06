@@ -39,6 +39,55 @@ export default function ProfileScreen() {
     }
   };
 
+  const modalStyles = StyleSheet.create({
+    closeIconButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: isDark
+        ? "rgba(150, 150, 150, 0.15)"
+        : "rgba(150, 150, 150, 0.1)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    themeOption: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: 16,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: "rgba(150, 150, 150, 0.15)",
+      marginBottom: 16,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    themePreview: {
+      marginTop: 24,
+      marginBottom: 24,
+      alignItems: "center",
+      padding: 20,
+      borderRadius: 16,
+      backgroundColor: isDark
+        ? "rgba(45, 45, 50, 0.3)"
+        : "rgba(240, 240, 240, 0.7)",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    gradientButton: {
+      backgroundColor: isDark ? "#2AB090" : "#36D1A8",
+      paddingVertical: 14,
+      alignItems: "center",
+      borderRadius: 16,
+    },
+  });
+
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
@@ -112,15 +161,22 @@ export default function ProfileScreen() {
           <ThemedView
             style={[
               styles.modalContent,
-              { backgroundColor: isDark ? "#1E2022" : "#FFFFFF" },
+              {
+                backgroundColor: isDark
+                  ? "rgba(40, 42, 45, 0.95)"
+                  : "rgba(245, 245, 245, 0.95)",
+              },
             ]}
           >
             <ThemedView style={styles.modalHeader}>
               <ThemedText type="subtitle">主题设置</ThemedText>
-              <TouchableOpacity onPress={() => setThemeModalVisible(false)}>
+              <TouchableOpacity
+                style={modalStyles.closeIconButton}
+                onPress={() => setThemeModalVisible(false)}
+              >
                 <Ionicons
                   name="close"
-                  size={24}
+                  size={22}
                   color={
                     isDark
                       ? Colors.dark.textSecondary
@@ -134,22 +190,34 @@ export default function ProfileScreen() {
               {/* 浅色模式选项 */}
               <TouchableOpacity
                 style={[
-                  styles.themeOption,
+                  modalStyles.themeOption,
+                  {
+                    backgroundColor: isDark
+                      ? "rgba(255, 204, 0, 0.08)"
+                      : "rgba(255, 204, 0, 0.12)",
+                  },
                   theme === "light" && {
                     borderColor: Colors[colorScheme || "light"].primary,
                     backgroundColor: isDark
-                      ? "rgba(54, 209, 168, 0.1)"
-                      : "rgba(54, 209, 168, 0.1)",
+                      ? "rgba(54, 209, 168, 0.15)"
+                      : "rgba(255, 204, 0, 0.2)",
                   },
                 ]}
                 onPress={() => setTheme("light")}
               >
                 <ThemedView style={styles.themeOptionContent}>
-                  <Ionicons
-                    name="sunny"
-                    size={28}
-                    color={AppleColors.systemYellow}
-                  />
+                  <ThemedView
+                    style={[
+                      styles.themeIconContainer,
+                      { backgroundColor: "rgba(255, 189, 60, 0.25)" },
+                    ]}
+                  >
+                    <Ionicons
+                      name="sunny"
+                      size={28}
+                      color={AppleColors.systemYellow}
+                    />
+                  </ThemedView>
                   <ThemedText style={styles.themeOptionText}>
                     浅色模式
                   </ThemedText>
@@ -159,7 +227,7 @@ export default function ProfileScreen() {
                     style={[
                       styles.themeSelectedIndicator,
                       {
-                        backgroundColor: Colors[colorScheme || "light"].primary,
+                        backgroundColor: isDark ? "#2AB090" : "#36D1A8",
                       },
                     ]}
                   >
@@ -171,22 +239,34 @@ export default function ProfileScreen() {
               {/* 深色模式选项 */}
               <TouchableOpacity
                 style={[
-                  styles.themeOption,
+                  modalStyles.themeOption,
+                  {
+                    backgroundColor: isDark
+                      ? "rgba(94, 92, 230, 0.1)"
+                      : "rgba(94, 92, 230, 0.08)",
+                  },
                   theme === "dark" && {
                     borderColor: Colors[colorScheme || "light"].primary,
                     backgroundColor: isDark
-                      ? "rgba(54, 209, 168, 0.1)"
-                      : "rgba(54, 209, 168, 0.1)",
+                      ? "rgba(94, 92, 230, 0.2)"
+                      : "rgba(94, 92, 230, 0.15)",
                   },
                 ]}
                 onPress={() => setTheme("dark")}
               >
                 <ThemedView style={styles.themeOptionContent}>
-                  <Ionicons
-                    name="moon"
-                    size={28}
-                    color={AppleColors.systemIndigo}
-                  />
+                  <ThemedView
+                    style={[
+                      styles.themeIconContainer,
+                      { backgroundColor: "rgba(94, 92, 230, 0.25)" },
+                    ]}
+                  >
+                    <Ionicons
+                      name="moon"
+                      size={28}
+                      color={AppleColors.systemIndigo}
+                    />
+                  </ThemedView>
                   <ThemedText style={styles.themeOptionText}>
                     深色模式
                   </ThemedText>
@@ -196,7 +276,7 @@ export default function ProfileScreen() {
                     style={[
                       styles.themeSelectedIndicator,
                       {
-                        backgroundColor: Colors[colorScheme || "light"].primary,
+                        backgroundColor: isDark ? "#2AB090" : "#36D1A8",
                       },
                     ]}
                   >
@@ -208,23 +288,35 @@ export default function ProfileScreen() {
               {/* 跟随系统选项 */}
               <TouchableOpacity
                 style={[
-                  styles.themeOption,
+                  modalStyles.themeOption,
+                  {
+                    backgroundColor: isDark
+                      ? "rgba(10, 132, 255, 0.08)"
+                      : "rgba(10, 132, 255, 0.06)",
+                  },
                   theme === "system" && {
                     borderColor: Colors[colorScheme || "light"].primary,
                     backgroundColor: isDark
-                      ? "rgba(54, 209, 168, 0.1)"
-                      : "rgba(54, 209, 168, 0.1)",
+                      ? "rgba(10, 132, 255, 0.2)"
+                      : "rgba(10, 132, 255, 0.15)",
                   },
                 ]}
                 onPress={() => setTheme("system")}
               >
                 <ThemedView style={styles.themeOptionContent}>
-                  <Ionicons
-                    name="phone-portrait"
-                    size={28}
-                    color={AppleColors.systemBlue}
-                  />
-                  <ThemedView style={{ flex: 1 }}>
+                  <ThemedView
+                    style={[
+                      styles.themeIconContainer,
+                      { backgroundColor: "rgba(10, 132, 255, 0.25)" },
+                    ]}
+                  >
+                    <Ionicons
+                      name="phone-portrait"
+                      size={28}
+                      color={AppleColors.systemBlue}
+                    />
+                  </ThemedView>
+                  <ThemedView style={{ flex: 1, backgroundColor: "null" }}>
                     <ThemedText style={styles.themeOptionText}>
                       跟随系统
                     </ThemedText>
@@ -238,7 +330,7 @@ export default function ProfileScreen() {
                     style={[
                       styles.themeSelectedIndicator,
                       {
-                        backgroundColor: Colors[colorScheme || "light"].primary,
+                        backgroundColor: isDark ? "#2AB090" : "#36D1A8",
                       },
                     ]}
                   >
@@ -248,19 +340,13 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </ThemedView>
 
-            <ThemedView style={styles.themePreview}>
-              <ThemedText style={styles.themePreviewText}>预览</ThemedText>
-              <ThemeToggleButton size={32} showLabel={false} />
-            </ThemedView>
-
             <TouchableOpacity
-              style={[
-                styles.closeButton,
-                { backgroundColor: Colors[colorScheme || "light"].primary },
-              ]}
+              style={styles.closeButton}
               onPress={() => setThemeModalVisible(false)}
             >
-              <ThemedText style={styles.closeButtonText}>确定</ThemedText>
+              <ThemedView style={modalStyles.gradientButton}>
+                <ThemedText style={styles.closeButtonText}>确定</ThemedText>
+              </ThemedView>
             </TouchableOpacity>
           </ThemedView>
         </ThemedView>
@@ -328,43 +414,53 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     padding: 20,
     minHeight: "60%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 10,
   },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: "null",
   },
   themeOptions: {
-    marginTop: 10,
+    marginTop: 16,
+    backgroundColor: "null",
   },
-  themeOption: {
-    flexDirection: "row",
+  themeIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
     alignItems: "center",
-    justifyContent: "space-between",
-    padding: 15,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(150, 150, 150, 0.2)",
-    marginBottom: 12,
+    marginRight: 16,
   },
   themeOptionContent: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+    backgroundColor: "null",
   },
   themeOptionText: {
     fontSize: 16,
-    marginLeft: 12,
+    fontWeight: "500",
   },
   themeOptionDesc: {
-    fontSize: 12,
-    marginLeft: 12,
+    fontSize: 13,
+    marginTop: 4,
     opacity: 0.6,
+    backgroundColor: "null",
   },
   themeSelectedIndicator: {
     width: 24,
@@ -373,21 +469,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  themePreview: {
-    marginTop: 20,
-    marginBottom: 20,
-    alignItems: "center",
-  },
   themePreviewText: {
     fontSize: 16,
-    marginBottom: 10,
+    marginBottom: 16,
     opacity: 0.7,
   },
   closeButton: {
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 20,
+    borderRadius: 16,
+    marginTop: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   closeButtonText: {
     color: "#FFFFFF",
