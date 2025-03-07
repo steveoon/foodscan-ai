@@ -7,37 +7,139 @@ import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useThemeStore } from "@/hooks/useThemeStore";
 import { useColorScheme as useRNColorScheme } from "react-native";
-import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import * as AppleColors from "@bacons/apple-colors";
+import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 
-export default function ProfileScreen() {
+// 主题选项组件
+function ThemeOption({
+  theme,
+  currentTheme,
+  optionType,
+  onSelect,
+}: {
+  theme: "light" | "dark" | "system";
+  currentTheme: "light" | "dark";
+  optionType: "light" | "dark" | "system";
+  onSelect: () => void;
+}) {
   const colorScheme = useColorScheme();
+  const isDark = currentTheme === "dark";
+
+  // 根据选项类型设置样式和图标
+  let backgroundColor = "";
+  let selectedBg = "";
+  let iconBg = "";
+  let icon: "sunny" | "moon" | "phone-portrait" = "sunny";
+  let label = "";
+  let description: string | undefined;
+
+  switch (optionType) {
+    case "light":
+      backgroundColor = isDark
+        ? "rgba(255, 204, 0, 0.08)"
+        : "rgba(255, 204, 0, 0.12)";
+      selectedBg = isDark
+        ? "rgba(54, 209, 168, 0.15)"
+        : "rgba(255, 204, 0, 0.2)";
+      iconBg = "rgba(255, 189, 60, 0.25)";
+      icon = "sunny";
+      label = "浅色模式";
+      break;
+    case "dark":
+      backgroundColor = isDark
+        ? "rgba(94, 92, 230, 0.1)"
+        : "rgba(94, 92, 230, 0.08)";
+      selectedBg = isDark
+        ? "rgba(94, 92, 230, 0.2)"
+        : "rgba(94, 92, 230, 0.15)";
+      iconBg = "rgba(94, 92, 230, 0.25)";
+      icon = "moon";
+      label = "深色模式";
+      break;
+    case "system":
+      backgroundColor = isDark
+        ? "rgba(10, 132, 255, 0.08)"
+        : "rgba(10, 132, 255, 0.06)";
+      selectedBg = isDark
+        ? "rgba(10, 132, 255, 0.2)"
+        : "rgba(10, 132, 255, 0.15)";
+      iconBg = "rgba(10, 132, 255, 0.25)";
+      icon = "phone-portrait";
+      label = "跟随系统";
+      description = `当前系统使用${isDark ? "深色" : "浅色"}模式`;
+      break;
+  }
+
+  const getIconColor = () => {
+    switch (optionType) {
+      case "light":
+        return AppleColors.systemYellow;
+      case "dark":
+        return AppleColors.systemIndigo;
+      case "system":
+        return AppleColors.systemBlue;
+      default:
+        return AppleColors.systemBlue; // 默认颜色
+    }
+  };
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.themeOption,
+        { backgroundColor },
+        theme === optionType && {
+          borderColor: Colors[colorScheme || "light"].primary,
+          backgroundColor: selectedBg,
+        },
+      ]}
+      onPress={onSelect}
+    >
+      <ThemedView style={styles.themeOptionContent}>
+        <ThemedView
+          style={[styles.themeIconContainer, { backgroundColor: iconBg }]}
+        >
+          <Ionicons name={icon} size={28} color={getIconColor()} />
+        </ThemedView>
+        <ThemedView style={{ flex: 1 }}>
+          <ThemedText style={styles.themeOptionText}>{label}</ThemedText>
+          {description && (
+            <ThemedText style={styles.themeOptionDesc}>
+              {description}
+            </ThemedText>
+          )}
+        </ThemedView>
+      </ThemedView>
+      {theme === optionType && (
+        <ThemedView
+          style={[
+            styles.themeSelectedIndicator,
+            {
+              backgroundColor: isDark ? "#2AB090" : "#36D1A8",
+            },
+          ]}
+        >
+          <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+        </ThemedView>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+// 主题设置模态框组件
+function ThemeSettingsModal({
+  visible,
+  onClose,
+}: { visible: boolean; onClose: () => void }) {
   const systemTheme = useRNColorScheme();
   const currentTheme = useThemeStore((state) =>
-    state.getCurrentTheme(systemTheme)
+    state.getCurrentTheme(systemTheme),
   );
   const isDark = currentTheme === "dark";
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
-
-  // 主题设置模态框状态
-  const [themeModalVisible, setThemeModalVisible] = useState(false);
-
-  // 主题显示文本
-  const getThemeText = () => {
-    switch (theme) {
-      case "light":
-        return "浅色模式";
-      case "dark":
-        return "深色模式";
-      case "system":
-        return `跟随系统 (${isDark ? "深色" : "浅色"})`;
-      default:
-        return "";
-    }
-  };
 
   const modalStyles = StyleSheet.create({
     closeIconButton: {
@@ -49,21 +151,6 @@ export default function ProfileScreen() {
         : "rgba(150, 150, 150, 0.1)",
       justifyContent: "center",
       alignItems: "center",
-    },
-    themeOption: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      padding: 16,
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: "rgba(150, 150, 150, 0.15)",
-      marginBottom: 16,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
-      elevation: 2,
     },
     themePreview: {
       marginTop: 24,
@@ -87,6 +174,106 @@ export default function ProfileScreen() {
       borderRadius: 16,
     },
   });
+
+  return (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <ThemedView style={styles.modalOverlay}>
+        <ThemedView
+          style={[
+            styles.modalContent,
+            {
+              backgroundColor: isDark
+                ? "rgba(40, 42, 45, 0.95)"
+                : "rgba(245, 245, 245, 0.95)",
+            },
+          ]}
+        >
+          <ThemedView style={styles.modalHeader}>
+            <ThemedText type="subtitle">主题设置</ThemedText>
+            <TouchableOpacity
+              style={modalStyles.closeIconButton}
+              onPress={onClose}
+            >
+              <Ionicons
+                name="close"
+                size={22}
+                color={
+                  isDark
+                    ? Colors.dark.textSecondary
+                    : Colors.light.textSecondary
+                }
+              />
+            </TouchableOpacity>
+          </ThemedView>
+
+          <ThemedView style={styles.themeOptions}>
+            <ThemeOption
+              theme={theme}
+              currentTheme={currentTheme}
+              optionType="light"
+              onSelect={() => setTheme("light")}
+            />
+
+            <ThemeOption
+              theme={theme}
+              currentTheme={currentTheme}
+              optionType="dark"
+              onSelect={() => setTheme("dark")}
+            />
+
+            <ThemeOption
+              theme={theme}
+              currentTheme={currentTheme}
+              optionType="system"
+              onSelect={() => setTheme("system")}
+            />
+          </ThemedView>
+
+          <ThemedView style={modalStyles.themePreview}>
+            <ThemedText style={styles.themePreviewText}>预览</ThemedText>
+            <ThemeToggleButton size={32} showLabel={false} />
+          </ThemedView>
+
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <ThemedView style={modalStyles.gradientButton}>
+              <ThemedText style={styles.closeButtonText}>确定</ThemedText>
+            </ThemedView>
+          </TouchableOpacity>
+        </ThemedView>
+      </ThemedView>
+    </Modal>
+  );
+}
+
+export default function ProfileScreen() {
+  const systemTheme = useRNColorScheme();
+  const currentTheme = useThemeStore((state) =>
+    state.getCurrentTheme(systemTheme),
+  );
+  const isDark = currentTheme === "dark";
+  const theme = useThemeStore((state) => state.theme);
+
+  // 主题设置模态框状态
+  const [themeModalVisible, setThemeModalVisible] = useState(false);
+
+  // 主题显示文本
+  const getThemeText = () => {
+    switch (theme) {
+      case "light":
+        return "浅色模式";
+      case "dark":
+        return "深色模式";
+      case "system":
+        return `跟随系统 (${isDark ? "深色" : "浅色"})`;
+      default:
+        return "";
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -151,206 +338,10 @@ export default function ProfileScreen() {
       </ThemedView>
 
       {/* 主题设置模态框 */}
-      <Modal
-        animationType="slide"
-        transparent={true}
+      <ThemeSettingsModal
         visible={themeModalVisible}
-        onRequestClose={() => setThemeModalVisible(false)}
-      >
-        <ThemedView style={styles.modalOverlay}>
-          <ThemedView
-            style={[
-              styles.modalContent,
-              {
-                backgroundColor: isDark
-                  ? "rgba(40, 42, 45, 0.95)"
-                  : "rgba(245, 245, 245, 0.95)",
-              },
-            ]}
-          >
-            <ThemedView style={styles.modalHeader}>
-              <ThemedText type="subtitle">主题设置</ThemedText>
-              <TouchableOpacity
-                style={modalStyles.closeIconButton}
-                onPress={() => setThemeModalVisible(false)}
-              >
-                <Ionicons
-                  name="close"
-                  size={22}
-                  color={
-                    isDark
-                      ? Colors.dark.textSecondary
-                      : Colors.light.textSecondary
-                  }
-                />
-              </TouchableOpacity>
-            </ThemedView>
-
-            <ThemedView style={styles.themeOptions}>
-              {/* 浅色模式选项 */}
-              <TouchableOpacity
-                style={[
-                  modalStyles.themeOption,
-                  {
-                    backgroundColor: isDark
-                      ? "rgba(255, 204, 0, 0.08)"
-                      : "rgba(255, 204, 0, 0.12)",
-                  },
-                  theme === "light" && {
-                    borderColor: Colors[colorScheme || "light"].primary,
-                    backgroundColor: isDark
-                      ? "rgba(54, 209, 168, 0.15)"
-                      : "rgba(255, 204, 0, 0.2)",
-                  },
-                ]}
-                onPress={() => setTheme("light")}
-              >
-                <ThemedView style={styles.themeOptionContent}>
-                  <ThemedView
-                    style={[
-                      styles.themeIconContainer,
-                      { backgroundColor: "rgba(255, 189, 60, 0.25)" },
-                    ]}
-                  >
-                    <Ionicons
-                      name="sunny"
-                      size={28}
-                      color={AppleColors.systemYellow}
-                    />
-                  </ThemedView>
-                  <ThemedText style={styles.themeOptionText}>
-                    浅色模式
-                  </ThemedText>
-                </ThemedView>
-                {theme === "light" && (
-                  <ThemedView
-                    style={[
-                      styles.themeSelectedIndicator,
-                      {
-                        backgroundColor: isDark ? "#2AB090" : "#36D1A8",
-                      },
-                    ]}
-                  >
-                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                  </ThemedView>
-                )}
-              </TouchableOpacity>
-
-              {/* 深色模式选项 */}
-              <TouchableOpacity
-                style={[
-                  modalStyles.themeOption,
-                  {
-                    backgroundColor: isDark
-                      ? "rgba(94, 92, 230, 0.1)"
-                      : "rgba(94, 92, 230, 0.08)",
-                  },
-                  theme === "dark" && {
-                    borderColor: Colors[colorScheme || "light"].primary,
-                    backgroundColor: isDark
-                      ? "rgba(94, 92, 230, 0.2)"
-                      : "rgba(94, 92, 230, 0.15)",
-                  },
-                ]}
-                onPress={() => setTheme("dark")}
-              >
-                <ThemedView style={styles.themeOptionContent}>
-                  <ThemedView
-                    style={[
-                      styles.themeIconContainer,
-                      { backgroundColor: "rgba(94, 92, 230, 0.25)" },
-                    ]}
-                  >
-                    <Ionicons
-                      name="moon"
-                      size={28}
-                      color={AppleColors.systemIndigo}
-                    />
-                  </ThemedView>
-                  <ThemedText style={styles.themeOptionText}>
-                    深色模式
-                  </ThemedText>
-                </ThemedView>
-                {theme === "dark" && (
-                  <ThemedView
-                    style={[
-                      styles.themeSelectedIndicator,
-                      {
-                        backgroundColor: isDark ? "#2AB090" : "#36D1A8",
-                      },
-                    ]}
-                  >
-                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                  </ThemedView>
-                )}
-              </TouchableOpacity>
-
-              {/* 跟随系统选项 */}
-              <TouchableOpacity
-                style={[
-                  modalStyles.themeOption,
-                  {
-                    backgroundColor: isDark
-                      ? "rgba(10, 132, 255, 0.08)"
-                      : "rgba(10, 132, 255, 0.06)",
-                  },
-                  theme === "system" && {
-                    borderColor: Colors[colorScheme || "light"].primary,
-                    backgroundColor: isDark
-                      ? "rgba(10, 132, 255, 0.2)"
-                      : "rgba(10, 132, 255, 0.15)",
-                  },
-                ]}
-                onPress={() => setTheme("system")}
-              >
-                <ThemedView style={styles.themeOptionContent}>
-                  <ThemedView
-                    style={[
-                      styles.themeIconContainer,
-                      { backgroundColor: "rgba(10, 132, 255, 0.25)" },
-                    ]}
-                  >
-                    <Ionicons
-                      name="phone-portrait"
-                      size={28}
-                      color={AppleColors.systemBlue}
-                    />
-                  </ThemedView>
-                  <ThemedView style={{ flex: 1, backgroundColor: "null" }}>
-                    <ThemedText style={styles.themeOptionText}>
-                      跟随系统
-                    </ThemedText>
-                    <ThemedText style={styles.themeOptionDesc}>
-                      当前系统使用{isDark ? "深色" : "浅色"}模式
-                    </ThemedText>
-                  </ThemedView>
-                </ThemedView>
-                {theme === "system" && (
-                  <ThemedView
-                    style={[
-                      styles.themeSelectedIndicator,
-                      {
-                        backgroundColor: isDark ? "#2AB090" : "#36D1A8",
-                      },
-                    ]}
-                  >
-                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                  </ThemedView>
-                )}
-              </TouchableOpacity>
-            </ThemedView>
-
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setThemeModalVisible(false)}
-            >
-              <ThemedView style={modalStyles.gradientButton}>
-                <ThemedText style={styles.closeButtonText}>确定</ThemedText>
-              </ThemedView>
-            </TouchableOpacity>
-          </ThemedView>
-        </ThemedView>
-      </Modal>
+        onClose={() => setThemeModalVisible(false)}
+      />
     </ThemedView>
   );
 }
@@ -432,11 +423,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: "null",
   },
   themeOptions: {
     marginTop: 16,
-    backgroundColor: "null",
+  },
+  themeOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(150, 150, 150, 0.15)",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   themeIconContainer: {
     width: 50,
@@ -450,7 +454,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
-    backgroundColor: "null",
   },
   themeOptionText: {
     fontSize: 16,
@@ -460,7 +463,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 4,
     opacity: 0.6,
-    backgroundColor: "null",
   },
   themeSelectedIndicator: {
     width: 24,

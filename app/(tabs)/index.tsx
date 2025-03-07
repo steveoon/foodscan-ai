@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform, useColorScheme } from "react-native";
+import { Image, StyleSheet, useColorScheme } from "react-native";
 
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
@@ -12,15 +12,13 @@ export default function HomeScreen() {
   const systemTheme = useColorScheme();
 
   // 使用Zustand store获取主题状态
-  const theme = useThemeStore((state) => state.theme);
   const currentTheme = useThemeStore((state) =>
-    state.getCurrentTheme(systemTheme)
+    state.getCurrentTheme(systemTheme),
   );
   const isDark = currentTheme === "dark";
 
   // 使用Apple标准颜色
   const primaryColor = isDark ? Colors.systemBlue : Colors.systemBlue;
-  const secondaryColor = isDark ? Colors.secondaryLabel : Colors.secondaryLabel;
   const accentColor = isDark ? Colors.systemOrange : Colors.systemOrange;
 
   return (

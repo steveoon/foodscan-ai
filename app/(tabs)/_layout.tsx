@@ -1,7 +1,5 @@
 import { Tabs } from "expo-router";
-import React from "react";
 import { Platform, TouchableOpacity, StyleSheet, View } from "react-native";
-import { useRouter } from "expo-router";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -11,7 +9,6 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 
 // 自定义中间按钮组件
 function CameraButton() {
-  const router = useRouter();
   const colorScheme = useColorScheme();
 
   return (
